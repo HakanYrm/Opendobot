@@ -30,8 +30,8 @@ https://www.sparkfun.com/products/9322
 '''
 
 from dobot import DobotDriver
-#driver = DobotDriver('COM3')
-driver = DobotDriver('/dev/tty0')
+driver = DobotDriver('COM5')
+#driver = DobotDriver('/dev/tty0')
 driver.Open()
 
 # Rotate base CW at 400 steps/s until limit switch is hit. Then retract CCW at 50 steps/s

@@ -542,7 +542,7 @@ class Dobot:
 			yint = []
 			locs, labels = self._plt.yticks()
 			for each in locs:
-			    yint.append(int(each))
+				yint.append(int(each))
 			self._plt.yticks(yint)
 			self._plt.show()
 
@@ -583,4 +583,9 @@ class Dobot:
 	
 	def ValveOn(self, on):
 		return self._driver.ValveOn(on)
+
+
+
+
+
 

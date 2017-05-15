@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 '''
-Simple demostration of open-dobot. Low-level control via driver.
+Simple demonstration of open-dobot. Low-level control via driver.
 
 The commands are queued in Arduino, hence when you stop this example dobot will continue
 to execute until the queue (200 commands) is empty.

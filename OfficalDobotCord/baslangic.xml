@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<playback>
+    <point>
+        <motionStyle>JUMP</motionStyle>
+        <isGrab>false</isGrab>
+        <x>263.1</x>
+        <y>0</y>
+        <z>-18.4</z>
+        <rHead>0</rHead>
+        <gripper>0</gripper>
+        <pauseTime>0</pauseTime>
+    </point>
+</playback>

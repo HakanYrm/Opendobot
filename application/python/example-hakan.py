@@ -1,88 +1,91 @@
 #! /usr/bin/env python
-
 import time
 from dobot import Dobot
-dobot = Dobot('COM3', debug=True)
+dobot = Dobot('COM5', debug=True)
 
-# The top Z to go to.
-up = 50
-# The bottom Z to go to.
-down = 50
-# Maximum speed in mm/s
+down=50.3
+up=53
+acceleration = 400 # Acceleration in mm/s^2
 speed = 400
-# Acceleration in mm/s^2
-acceleration = 300
+dobot.CalibrateJoint(1, dobot.freqToCmdVal(50), dobot.freqToCmdVal(50), 1, 5, 1, 0)
+dobot.InitializeAccelerometers()
 
-# Enable calibration routine if you have a limit switch/photointerrupter installed on the arm.
-# See example-switch.py for details.
-# Move both arms to approximately 45 degrees.
-# Re-initialize accelerometers at approx. 45 degrees for the best result. Available on RAMPS only.
+testCycleNumber = 10
 
-#dobot.MoveWithSpeed(260.0, 0.0, 85, 700, acceleration)
-#time.sleep(2)
-#dobot.InitializeAccelerometers()
-#dobot.CalibrateJoint(1, dobot.freqToCmdVal(2000), dobot.freqToCmdVal(50), 1, 5, 1, 0)
-dobot.CalibrateJoint(1, dobot.freqToCmdVal(1000), dobot.freqToCmdVal(50),1 , 5, 1, 0)
+ph4x1 = 108  # phone 4 x1 position
+ph4x2 = ph4x1 + 123.7  # phone 4 x2 position #real length = 12.1cm
+ph4x3 = ph4x2 + 2.2
+ph4x4 = ph4x1 + 2.2
 
+ph4y1 = 133.4  # phone 4 y1 position
+ph4y2 = ph4y1 - 4.2  # ph4y2 = ph4y1 + 68.1  # phone 4 y2 position #real length = 6.8cm
+ph4y3 = ph4y2 + 68.4
+ph4y4 = ph4y3 + 3.8
 
-#Line
-dobot.MoveWithSpeed(200.0, 80.0, up, speed, acceleration)
-#dobot.MoveWithSpeed(200.0, 80.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(200.0, -90.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(200.0, -90.0, up, speed, acceleration)
+shiftY = ph4y2 - ph4y1  # -4.2
+shiftX = ph4x3 - ph4x2  # 2.2
 
-# dobot.MoveWithSpeed(200.0, -90.0, down, speed, acceleration)
-# dobot.MoveWithSpeed(200.0, 80.0, down, speed, acceleration)
-# dobot.MoveWithSpeed(200.0, 80.0, up, speed, acceleration)
-# dobot.MoveWithSpeed(200.0, -90.0, up, speed, acceleration)
+numberOfSquareX = 16
+numberOfSquareY = 9
 
-# Rectangle with zig-zag inside
-# dobot.MoveWithSpeed(170.0, -90.0, up, speed, acceleration)
-# dobot.MoveWithSpeed(170.0, -90.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(170.0, 80.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(230.0, 80.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(230.0, -90.0, down, speed, acceleration)
-#dobot.MoveWithSpeed(170.0, -90.0, down, speed, acceleration)
-# x = 230
-#y = 0
-#for y in range(-90, 81, 5):
-#	if x == 170:
-#		x = 230
-#	else:
-#		x = 170
-#	dobot.MoveWithSpeed(x, y, down, speed, acceleration)
+xRange = (ph4x2-ph4x1)/numberOfSquareX
+yRange = (ph4y4-ph4y1)/numberOfSquareY
+
+xBuffer = (xRange/2.0)
+yBuffer = (yRange/2.0)
+
+def pushTouchTestStartButton():
+    dobot.MoveWithSpeed(ph4x1 + 105, ph4y1 + 34, up, speed, acceleration)
+    dobot.MoveWithSpeed(ph4x1 + 105, ph4y1 + 34, down, speed, acceleration)
+    dobot.MoveWithSpeed(ph4x1 + 105, ph4y1 + 34, up, speed, acceleration)
+# def TouchTest(x1,x2,y1,y2,xxRange,yyRange,xxBuffer,yyBuffer,upp,downn,speedd,accelerationn,numberOfSquareXX,numberOfSquareYY):
+#     shiftyy = 0.0
+#     for x in my_range(x1 + xxBuffer, x2 - xxBuffer + 1.0, xxRange):
+#         shiftyy = shiftyy + (shifty / numberOfSquareYY)
+#         shiftxx=0.0
+#         for y in my_range(y1 + yyBuffer, y2 - yyBuffer + 1.0, yyRange):
+#             shiftxx = shiftxx + (shiftx / numberOfSquareXX)
+#             dobot.MoveWithSpeed(x+shiftxx, y-shiftyy, upp, speedd, accelerationn)
+#             dobot.MoveWithSpeed(x+shiftxx, y-shiftyy, downn, speed, accelerationn)
+#             dobot.MoveWithSpeed(x+shiftxx, y-shiftyy, upp, speed, accelerationn)
+
+def TouchTest(x1,y1,xxRange,yyRange,xxBuffer,yyBuffer,upp,downn,
+              speedd,accelerationn,numberOfSquareXX,numberOfSquareYY,shiftXX,shiftYY):
+    for stepX in range(0,numberOfSquareXX):
+        x = x1 + xxRange * stepX + xxBuffer
+        for stepY in range(0, numberOfSquareYY):
+            y = y1 + yyRange * stepY + yyBuffer + stepX * (shiftYY/numberOfSquareXX)
+            x = x + shiftXX/numberOfSquareYY
+
+            dobot.MoveWithSpeed(x, y, upp, speedd, accelerationn)
+            dobot.MoveWithSpeed(x, y, downn, speed, accelerationn)
+            dobot.MoveWithSpeed(x, y, upp, speed, accelerationn)
+
+def my_range(start, end, step):
+    while start <= end:
+        yield start
+        start += step
+
+for cycle in range(0, testCycleNumber):
+    print testCycleNumber
+    pushTouchTestStartButton()
+    TouchTest(ph4x1,ph4y1,xRange,yRange,xBuffer,yBuffer, up, down,
+              speed, acceleration, numberOfSquareX,numberOfSquareY,shiftX, shiftY)
+    dobot.Wait(10)
+
+# dobot.MoveWithSpeed(ph4x1, ph4y1, up, speed, acceleration)#start point control
+# raw_input("Press Enter to continue...")
 #
-#dobot.MoveWithSpeed(x, y, up, speed, acceleration)
-#dobot.MoveWithSpeed(200.0, -90.0, up, speed, acceleration)
-# Jog
-#while True:
-# 	dobot.MoveWithSpeed(200.0, 80.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 80.0, down, speed, acceleration)
- #	dobot.MoveWithSpeed(200.0, 80.0, up, speed, acceleration)
- #	dobot.MoveWithSpeed(200.0, 80.0, 200, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -80.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -80.0, down, speed, acceleration)
-#	dobot.MoveWithSpeed(200.0, -80.0, up, speed, acceleration)
+# dobot.MoveWithSpeed(ph4x2, ph4y2, up, speed, acceleration)#start point control
+# raw_input("Press Enter to continue...")
+#
+# dobot.MoveWithSpeed(ph4x3, ph4y3, up, speed, acceleration)#x2,y1
+# raw_input("Press Enter to continue...")
+#
+# dobot.MoveWithSpeed(ph4x1, ph4y1-2.0+(68.1+1.5), up, speed, acceleration)#x2,y1
+# raw_input("Press Enter to continue...")
 
-# Dashed line
-# while True:
-# 	dobot.MoveWithSpeed(200.0, 80.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 80.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 70.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 70.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 40.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 40.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 30.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 30.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 0.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, 0.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -10.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -10.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -40.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -40.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -50.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -50.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -80.0, up, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -80.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -90.0, down, speed, acceleration)
-# 	dobot.MoveWithSpeed(200.0, -90.0, up, speed, acceleration)
+#go to home
+#raw_input("Press Enter to go home...")
+dobot.MoveWithSpeed(260, -20, 80, speed, acceleration)
+
